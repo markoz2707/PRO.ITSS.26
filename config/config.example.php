@@ -1,0 +1,114 @@
+<?php
+/**
+ * ITSS Project Management System
+ * Configuration File
+ *
+ * Copy this file to config.php and fill in your settings
+ */
+
+return [
+    // Database Configuration
+    'database' => [
+        'host' => 'localhost',
+        'port' => 3306,
+        'name' => 'itss_projects',
+        'user' => 'root',
+        'password' => '',
+        'charset' => 'utf8mb4'
+    ],
+
+    // Application Settings
+    'app' => [
+        'name' => 'ITSS Project Management',
+        'url' => 'http://localhost',
+        'timezone' => 'Europe/Warsaw',
+        'locale' => 'pl_PL',
+        'debug' => true
+    ],
+
+    // Session Configuration
+    'session' => [
+        'lifetime' => 7200, // 2 hours
+        'name' => 'ITSS_SESSION',
+        'secure' => false, // Set to true in production with HTTPS
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ],
+
+    // Microsoft 365 / Azure AD Configuration
+    'azure' => [
+        'tenant_id' => '', // Your Azure AD Tenant ID
+        'client_id' => '', // Your Application (client) ID
+        'client_secret' => '', // Your Application Secret
+        'redirect_uri' => 'http://localhost/auth/callback',
+        'scopes' => ['openid', 'profile', 'email', 'User.Read']
+    ],
+
+    // Dynamics 365 CRM Configuration
+    'dynamics_crm' => [
+        'url' => 'https://itss.crm4.dynamics.com',
+        'api_version' => '9.2',
+        'client_id' => '', // CRM Application Client ID
+        'client_secret' => '', // CRM Application Secret
+        'resource' => 'https://itss.crm4.dynamics.com',
+        'sync_interval' => 3600, // Sync every hour
+        'projects_entity' => 'opportunities' // or custom entity name
+    ],
+
+    // ManageEngine ServiceDesk Plus Configuration
+    'servicedesk' => [
+        'url' => '', // Your ServiceDesk Plus URL
+        'api_key' => '', // ServiceDesk API Key
+        'sync_interval' => 1800, // Sync every 30 minutes
+        'technician_key' => '' // Technician key for API access
+    ],
+
+    // File Upload Configuration
+    'upload' => [
+        'max_size' => 50 * 1024 * 1024, // 50 MB
+        'allowed_types' => [
+            'pdf', 'doc', 'docx', 'xls', 'xlsx',
+            'jpg', 'jpeg', 'png', 'gif',
+            'zip', 'rar', '7z'
+        ],
+        'documents_path' => __DIR__ . '/../uploads/documents',
+        'invoices_path' => __DIR__ . '/../uploads/invoices'
+    ],
+
+    // Czasomat Integration
+    'czasomat' => [
+        'url' => 'https://czasomat.itss.pl'
+    ],
+
+    // Email Configuration (for notifications)
+    'email' => [
+        'from' => 'noreply@itss.pl',
+        'from_name' => 'ITSS Project Management',
+        'smtp_host' => '',
+        'smtp_port' => 587,
+        'smtp_user' => '',
+        'smtp_password' => '',
+        'smtp_encryption' => 'tls'
+    ],
+
+    // Leave Request Settings
+    'leaves' => [
+        'require_team_leader_approval' => true,
+        'require_manager_approval' => true,
+        'notify_on_status_change' => true
+    ],
+
+    // Bonus Calculation Settings
+    'bonuses' => [
+        'margin_1_formula' => 'revenue - direct_costs', // Marża 1 = Przychody - Koszty bezpośrednie
+        'margin_2_formula' => 'margin_1 - labor_costs', // Marża 2 = Marża 1 - Koszty pracy
+        'default_currency' => 'PLN'
+    ],
+
+    // Logging
+    'logging' => [
+        'enabled' => true,
+        'path' => __DIR__ . '/../logs',
+        'level' => 'debug' // debug, info, warning, error
+    ]
+];
