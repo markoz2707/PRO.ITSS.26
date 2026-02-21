@@ -55,12 +55,20 @@ return [
         'projects_entity' => 'opportunities' // or custom entity name
     ],
 
-    // ManageEngine ServiceDesk Plus Configuration
+    // ManageEngine ServiceDesk Plus MSP Configuration
     'servicedesk' => [
-        'url' => '', // Your ServiceDesk Plus URL
+        'url' => '', // Your ServiceDesk Plus MSP URL (e.g. https://sdp.itss.pl)
         'api_key' => '', // ServiceDesk API Key
         'sync_interval' => 1800, // Sync every 30 minutes
-        'technician_key' => '' // Technician key for API access
+        'technician_key' => '', // Technician key for API access
+        'sync_contracts' => true, // Synchronize contracts module
+        'sync_projects' => true, // Synchronize projects module
+    ],
+
+    // Data Reconciliation Settings
+    'reconciliation' => [
+        'auto_match_threshold' => 70, // Min confidence (%) for auto-matching
+        'auto_reconcile_on_sync' => false, // Auto-reconcile after sync (true = no manual review)
     ],
 
     // File Upload Configuration

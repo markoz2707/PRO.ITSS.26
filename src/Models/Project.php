@@ -91,7 +91,11 @@ class Project
     {
         $updateData = [];
         $allowedFields = ['project_name', 'salesperson_id', 'architect_id', 'status',
-                          'start_date', 'end_date', 'description', 'last_sync_at'];
+                          'start_date', 'end_date', 'description', 'last_sync_at',
+                          'servicedesk_project_id', 'servicedesk_contract_id',
+                          'sd_contract_value', 'sd_contract_type', 'sd_sla_name',
+                          'sd_support_type', 'sd_scheduled_hours', 'sd_actual_hours',
+                          'sd_completion_percent', 'sd_last_sync_at', 'data_source'];
 
         foreach ($allowedFields as $field) {
             if (array_key_exists($field, $data)) {

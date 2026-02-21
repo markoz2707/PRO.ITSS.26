@@ -127,9 +127,10 @@ ob_start();
 
 <div class="card">
     <div class="card-header">Synchronizacja danych</div>
-    <div style="display: flex; gap: 1rem;">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
         <button onclick="syncCRM()" class="btn btn-primary">Synchronizuj CRM</button>
         <button onclick="syncServiceDesk()" class="btn btn-primary">Synchronizuj ServiceDesk</button>
+        <a href="/reconciliation" class="btn btn-warning">Uspójnianie danych</a>
     </div>
     <div id="sync-status" style="margin-top: 1rem;"></div>
 </div>

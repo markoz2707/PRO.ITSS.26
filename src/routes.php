@@ -412,3 +412,122 @@ $router->get('/api/projects/{id}/revenues', function(Request $req, Response $res
     $revenues = $projectRevenueModel->getByProject($id);
     $res->json(['success' => true, 'data' => $revenues]);
 });
+
+// =========================================================================
+// Uspójnianie danych (Data Reconciliation)
+// =========================================================================
+
+$router->get('/reconciliation', function(Request $req, Response $res) {
+    require __DIR__ . '/../views/reconciliation/index.php';
+});
+
+$router->get('/reconciliation/history', function(Request $req, Response $res) {
+    require __DIR__ . '/../views/reconciliation/history.php';
+});
+
+// API: podgląd dopasowań
+$router->get('/api/reconciliation/preview', function(Request $req, Response $res) {
+    $service = new \ITSS\Services\DataReconciliationService();
+    $preview = $service->getReconciliationPreview();
+    $res->json(['success' => true, 'data' => $preview]);
+});
+
+// API: statystyki uspójniania
+$router->get('/api/reconciliation/stats', function(Request $req, Response $res) {
+    $service = new \ITSS\Services\DataReconciliationService();
+    $stats = $service->getReconciliationStats();
+    $res->json(['success' => true, 'data' => $stats]);
+});
+
+// API: historia uspójniania
+$router->get('/api/reconciliation/history', function(Request $req, Response $res) {
+    $service = new \ITSS\Services\DataReconciliationService();
+    $limit = (int)($req->query('limit') ?? 100);
+    $history = $service->getReconciliationHistory($limit);
+    $res->json(['success' => true, 'data' => $history]);
+});
+
+// API: automatyczne scalanie (wysoka pewność)
+$router->post('/api/reconciliation/auto', function(Request $req, Response $res) {
+    $userId = \ITSS\Core\Session::get('user_id');
+    $service = new \ITSS\Services\DataReconciliationService();
+
+    try {
+        $results = $service->executeAutoReconciliation($userId);
+        $res->json(['success' => true, 'data' => $results]);
+    } catch (\Exception $e) {
+        $res->status(500)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// API: ręczne powiązanie
+$router->post('/api/reconciliation/link', function(Request $req, Response $res) {
+    $userId = \ITSS\Core\Session::get('user_id');
+    $service = new \ITSS\Services\DataReconciliationService();
+
+    $projectId = (int)$req->input('project_id');
+    $sdContractId = $req->input('sd_contract_id') ? (int)$req->input('sd_contract_id') : null;
+    $sdProjectId = $req->input('sd_project_id') ? (int)$req->input('sd_project_id') : null;
+    $selectedFields = $req->input('selected_fields') ?? [];
+
+    try {
+        $service->manualLink($projectId, $sdContractId, $sdProjectId, $selectedFields, $userId);
+        $res->json(['success' => true]);
+    } catch (\Exception $e) {
+        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// API: rozłączenie
+$router->post('/api/reconciliation/unlink', function(Request $req, Response $res) {
+    $userId = \ITSS\Core\Session::get('user_id');
+    $service = new \ITSS\Services\DataReconciliationService();
+
+    $projectId = (int)$req->input('project_id');
+    $unlinkType = $req->input('unlink_type', 'all');
+
+    try {
+        $service->unlinkProject($projectId, $unlinkType, $userId);
+        $res->json(['success' => true]);
+    } catch (\Exception $e) {
+        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// API: lista kontraktów ServiceDesk
+$router->get('/api/servicedesk/contracts', function(Request $req, Response $res) {
+    $contractModel = new \ITSS\Models\ServiceDeskContract();
+    $status = $req->query('status');
+    $contracts = $contractModel->getAll($status);
+    $res->json(['success' => true, 'data' => $contracts]);
+});
+
+// API: lista projektów ServiceDesk
+$router->get('/api/servicedesk/projects', function(Request $req, Response $res) {
+    $sdProjectModel = new \ITSS\Models\ServiceDeskProject();
+    $status = $req->query('status');
+    $projects = $sdProjectModel->getAll($status);
+    $res->json(['success' => true, 'data' => $projects]);
+});
+
+// Synchronizacja kontraktów ServiceDesk
+$router->post('/api/sync/servicedesk-contracts', function(Request $req, Response $res) use ($config) {
+    try {
+        $serviceDeskService = new \ITSS\Services\ServiceDeskService($config['servicedesk']);
+        $count = $serviceDeskService->syncContracts();
+        $res->json(['success' => true, 'synced_count' => $count]);
+    } catch (\Exception $e) {
+        $res->status(500)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+// Synchronizacja projektów ServiceDesk
+$router->post('/api/sync/servicedesk-projects', function(Request $req, Response $res) use ($config) {
+    try {
+        $serviceDeskService = new \ITSS\Services\ServiceDeskService($config['servicedesk']);
+        $count = $serviceDeskService->syncSDProjects();
+        $res->json(['success' => true, 'synced_count' => $count]);
+    } catch (\Exception $e) {
+        $res->status(500)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});

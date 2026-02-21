@@ -82,7 +82,14 @@ mysql -u %DB_USER% -p%DB_PASSWORD% %DB_NAME% < database\schema_extended.sql
 if %ERRORLEVEL% EQU 0 (
     echo [OK] Rozszerzenia schematu zaimportowane
 ) else (
-    echo [UWAGA] Nie udalo sie zaimportowac rozsszerzen (moga juz istniec)
+    echo [UWAGA] Nie udalo sie zaimportowac rozszerzen (moga juz istniec)
+)
+
+mysql -u %DB_USER% -p%DB_PASSWORD% %DB_NAME% < database\schema_reconciliation.sql
+if %ERRORLEVEL% EQU 0 (
+    echo [OK] Schemat uspojniania danych zaimportowany
+) else (
+    echo [UWAGA] Nie udalo sie zaimportowac schematu uspojniania (moze juz istnieje)
 )
 
 echo.

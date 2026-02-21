@@ -71,8 +71,32 @@ if ($config['servicedesk']['sync_interval'] ?? false) {
 
         $ticketsCount = $serviceDeskService->syncHelpdeskTickets();
         Logger::info("ServiceDesk tickets sync completed: {$ticketsCount} tickets synchronized");
+
+        // Synchronizacja kontraktów z modułu Umowy
+        if ($config['servicedesk']['sync_contracts'] ?? false) {
+            $contractsCount = $serviceDeskService->syncContracts();
+            Logger::info("ServiceDesk contracts sync completed: {$contractsCount} contracts synchronized");
+        }
+
+        // Synchronizacja projektów z modułu Projekty
+        if ($config['servicedesk']['sync_projects'] ?? false) {
+            $sdProjectsCount = $serviceDeskService->syncSDProjects();
+            Logger::info("ServiceDesk projects sync completed: {$sdProjectsCount} projects synchronized");
+        }
     } catch (\Exception $e) {
         Logger::error('ServiceDesk synchronization failed: ' . $e->getMessage());
+    }
+}
+
+// Automatyczne uspójnianie (opcjonalne)
+if ($config['reconciliation']['auto_reconcile_on_sync'] ?? false) {
+    try {
+        Logger::info('Starting automatic data reconciliation');
+        $reconciliationService = new \ITSS\Services\DataReconciliationService();
+        $results = $reconciliationService->executeAutoReconciliation(0); // system user
+        Logger::info("Auto-reconciliation completed: merged={$results['merged']}, skipped={$results['skipped']}");
+    } catch (\Exception $e) {
+        Logger::error('Auto-reconciliation failed: ' . $e->getMessage());
     }
 }
 

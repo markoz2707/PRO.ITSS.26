@@ -102,8 +102,102 @@ ob_start();
             <td><?php echo nl2br(htmlspecialchars($project['description'])); ?></td>
         </tr>
         <?php endif; ?>
+        <tr>
+            <th>Źródło danych:</th>
+            <td>
+                <?php
+                $sourceLabel = match($project['data_source'] ?? 'crm') {
+                    'crm' => 'CRM',
+                    'servicedesk' => 'ServiceDesk',
+                    'reconciled' => 'Uspójnione (CRM + SD)',
+                    default => $project['data_source'] ?? 'CRM'
+                };
+                $sourceBadge = match($project['data_source'] ?? 'crm') {
+                    'reconciled' => 'badge-success',
+                    'servicedesk' => 'badge-warning',
+                    default => 'badge-info'
+                };
+                ?>
+                <span class="badge <?php echo $sourceBadge; ?>"><?php echo $sourceLabel; ?></span>
+            </td>
+        </tr>
     </table>
 </div>
+
+<?php if (!empty($project['servicedesk_contract_id']) || !empty($project['servicedesk_project_id'])): ?>
+<div class="card">
+    <div class="card-header">Dane z ServiceDesk Plus</div>
+    <table>
+        <?php if (!empty($project['servicedesk_contract_id'])): ?>
+        <tr>
+            <th style="width: 200px;">ID umowy SD:</th>
+            <td><?php echo htmlspecialchars($project['servicedesk_contract_id']); ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_contract_type'])): ?>
+        <tr>
+            <th>Typ umowy:</th>
+            <td><?php echo htmlspecialchars($project['sd_contract_type']); ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_contract_value'])): ?>
+        <tr>
+            <th>Wartość umowy:</th>
+            <td><strong><?php echo number_format($project['sd_contract_value'], 2, ',', ' '); ?> PLN</strong></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_sla_name'])): ?>
+        <tr>
+            <th>SLA:</th>
+            <td><?php echo htmlspecialchars($project['sd_sla_name']); ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_support_type'])): ?>
+        <tr>
+            <th>Typ wsparcia:</th>
+            <td><?php echo htmlspecialchars($project['sd_support_type']); ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['servicedesk_project_id'])): ?>
+        <tr>
+            <th>ID projektu SD:</th>
+            <td><?php echo htmlspecialchars($project['servicedesk_project_id']); ?></td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_scheduled_hours'])): ?>
+        <tr>
+            <th>Godziny zaplanowane:</th>
+            <td><?php echo number_format($project['sd_scheduled_hours'], 2); ?> h</td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_actual_hours'])): ?>
+        <tr>
+            <th>Godziny zrealizowane:</th>
+            <td><?php echo number_format($project['sd_actual_hours'], 2); ?> h</td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_completion_percent'])): ?>
+        <tr>
+            <th>Ukończenie (SD):</th>
+            <td>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <div style="width:100px; height:8px; background:#e9ecef; border-radius:4px; overflow:hidden;">
+                        <div style="width:<?php echo min(100, $project['sd_completion_percent']); ?>%; height:100%; background:#28a745; border-radius:4px;"></div>
+                    </div>
+                    <span><?php echo number_format($project['sd_completion_percent'], 1); ?>%</span>
+                </div>
+            </td>
+        </tr>
+        <?php endif; ?>
+        <?php if (!empty($project['sd_last_sync_at'])): ?>
+        <tr>
+            <th>Ostatnia synchronizacja SD:</th>
+            <td><?php echo date('Y-m-d H:i', strtotime($project['sd_last_sync_at'])); ?></td>
+        </tr>
+        <?php endif; ?>
+    </table>
+</div>
+<?php endif; ?>
 
 <div class="card">
     <div class="card-header">Godziny pracy</div>

@@ -234,8 +234,100 @@ Wszystkie wymagania użytkownika zostały w pełni zrealizowane:
 
 ---
 
-**Wersja:** 1.1.0
-**Data:** 2026-01-10
+## Wersja 1.2.0 - Uspójnianie danych CRM ↔ ServiceDesk Plus MSP
+
+**Data:** 2026-02-21
+
+### 9. ✅ Moduł uspójniania danych (Data Reconciliation)
+
+#### Nowe integracje z ServiceDesk Plus MSP:
+- ✅ **Moduł Umowy (Contracts)** - synchronizacja kontraktów z SD MSP
+  - Pobieranie nazwy, typu, wartości, dat, SLA, typu wsparcia
+  - Paginacja wyników API (automatyczne pobieranie wszystkich rekordów)
+  - Cache danych w tabeli `servicedesk_contracts`
+
+- ✅ **Moduł Projekty (Projects)** - synchronizacja projektów z SD MSP
+  - Pobieranie nazwy, kodu, właściciela, statusu, godzin, % ukończenia
+  - Cache danych w tabeli `servicedesk_projects`
+
+#### Mechanizm uspójniania:
+- ✅ **Automatyczne dopasowywanie** - algorytm porównuje:
+  - Numery projektów / kody
+  - Nazwy (similar_text, tokeny, Levenshtein)
+  - Oblicza score pewności dopasowania 0-100%
+- ✅ **Podgląd dopasowań** - widok porównawczy CRM vs Umowa SD vs Projekt SD
+- ✅ **Automatyczne scalanie** - jednoklkowe scalenie dopasowań z pewnością ≥70%
+- ✅ **Ręczne powiązanie** - dla niestandardowych dopasowań
+- ✅ **Rozłączanie** - cofnięcie powiązania kontrakt/projekt SD
+- ✅ **Historia operacji** - pełny audit trail z JSON polami before/after
+
+#### Rozszerzenia bazy danych:
+- ✅ Tabela `servicedesk_contracts` - cache kontraktów z SD MSP
+- ✅ Tabela `servicedesk_projects` - cache projektów z SD MSP
+- ✅ Tabela `data_reconciliation_log` - historia operacji uspójniania
+- ✅ Nowe kolumny w `projects`: servicedesk_project_id, servicedesk_contract_id,
+  sd_contract_value, sd_contract_type, sd_sla_name, sd_support_type,
+  sd_scheduled_hours, sd_actual_hours, sd_completion_percent, data_source
+
+#### Nowe modele:
+- ✅ `ServiceDeskContract` - umowy z SD (upsert, link/unlink, wyszukiwanie)
+- ✅ `ServiceDeskProject` - projekty z SD (upsert, link/unlink, wyszukiwanie)
+- ✅ `DataReconciliationLog` - logi operacji uspójniania (statystyki, historia)
+
+#### Nowe serwisy:
+- ✅ `DataReconciliationService` - silnik uspójniania danych
+  - Algorytm matchingu: exact match, similar_text, token overlap, Levenshtein
+  - Generowanie podglądu scalenia z listą pól do uzupełnienia
+  - Transakcyjne scalanie z rollbackiem
+  - Historia i statystyki
+
+#### Nowe endpointy API (10):
+- ✅ `GET /api/reconciliation/preview` - podgląd proponowanych dopasowań
+- ✅ `GET /api/reconciliation/stats` - statystyki uspójniania
+- ✅ `GET /api/reconciliation/history` - historia operacji
+- ✅ `POST /api/reconciliation/auto` - automatyczne scalanie
+- ✅ `POST /api/reconciliation/link` - ręczne powiązanie
+- ✅ `POST /api/reconciliation/unlink` - rozłączenie powiązania
+- ✅ `GET /api/servicedesk/contracts` - lista kontraktów SD
+- ✅ `GET /api/servicedesk/projects` - lista projektów SD
+- ✅ `POST /api/sync/servicedesk-contracts` - synchronizacja kontraktów
+- ✅ `POST /api/sync/servicedesk-projects` - synchronizacja projektów SD
+
+#### Nowe widoki (2):
+- ✅ `views/reconciliation/index.php` - główny panel uspójniania
+  - Statystyki (CRM / SD umowy / SD projekty / uspójnione)
+  - Panel synchronizacji wszystkich źródeł
+  - Zakładki: Podgląd dopasowań / Niepowiązane / Ręczne powiązanie / Historia
+  - Widok porównawczy z kolorowymi kolumnami (CRM/Umowa/Projekt)
+  - Pasek pewności dopasowania z kolorami
+  - Lista pól do uzupełnienia z wartościami before→after
+- ✅ `views/reconciliation/history.php` - dziennik operacji
+
+#### Rozszerzenia istniejących widoków:
+- ✅ **Projekt detail** - sekcja "Dane z ServiceDesk Plus" (wartość umowy, SLA, godziny, % ukończenia)
+- ✅ **Dashboard** - przycisk "Uspójnianie danych"
+- ✅ **Nawigacja** - nowy link "Uspójnianie danych" w menu
+
+#### Aktualizacja konfiguracji:
+- ✅ `config.example.php` - nowe opcje: sync_contracts, sync_projects, reconciliation
+- ✅ `cron/sync.php` - automatyczna synchronizacja kontraktów/projektów SD + auto-reconciliation
+- ✅ `install.sh` / `install.bat` - import schema_reconciliation.sql
+
+---
+
+### Statystyki implementacji v1.2.0:
+- **Nowe tabele:** 3 (servicedesk_contracts, servicedesk_projects, data_reconciliation_log)
+- **Nowe modele:** 3 (ServiceDeskContract, ServiceDeskProject, DataReconciliationLog)
+- **Nowe serwisy:** 1 (DataReconciliationService)
+- **Nowe endpointy API:** 10
+- **Nowe widoki:** 2 (reconciliation/index, reconciliation/history)
+- **Rozszerzony ServiceDeskService:** +6 metod (syncContracts, syncSDProjects, ...)
+- **Łącznie tabel w bazie:** 20
+
+---
+
+**Wersja:** 1.2.0
+**Data:** 2026-02-21
 **Status:** ✅ UKOŃCZONY
 **Autor:** ITSS Development Team
 **Copyright:** ITSS Sp. z o.o.

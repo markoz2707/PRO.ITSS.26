@@ -111,6 +111,13 @@ else
     warning "Nie udało się zaimportować rozszerzeń schematu (może już istnieją)"
 fi
 
+mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" < database/schema_reconciliation.sql
+if [ $? -eq 0 ]; then
+    success "Schemat uspójniania danych zaimportowany"
+else
+    warning "Nie udało się zaimportować schematu uspójniania (może już istnieje)"
+fi
+
 echo ""
 
 # Konfiguracja aplikacji
