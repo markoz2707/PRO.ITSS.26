@@ -345,40 +345,48 @@ php tests/ProjectRevenueTest.php
 - [ ] Eksport do CSV/Excel
 - [ ] Szablony importu
 
-#### Wersja 1.3.0
-- [ ] Import z KSeF API
-- [ ] Automatyczne pobieranie faktur z e-mail
-- [ ] OCR dla skanowanych faktur
-- [ ] Integracja z systemami księgowymi
+#### Wersja 1.3.0 - Pełna integracja KSeF, Email i Eksport
+**Data wydania:** 2026-02-28
 
-### Migracja z wersji 1.0.0
+### Nowe funkcjonalności
 
-```sql
--- Backup bazy danych
-mysqldump -u user -p database > backup_before_v1.1.0.sql
+#### 1. Pełna integracja z KSeF API
+- Bezpośrednia komunikacja z systemem Ministerstwa Finansów.
+- Obsługa autoryzacji RSA z szyfrowaniem tokenów (OpenSSL).
+- Pobieranie listy faktur (nagłówków) dla zadanego okresu.
+- Pobieranie pełnej treści faktur w formacie XML (FA-2) i automatyczny import do bazy.
+- Parser XML FA(2) wyciągający pozycje faktury, stawki VAT i dane kontrahentów.
 
--- Uruchom migrację
-mysql -u user -p database < database/schema_extended.sql
+#### 2. Automatyczny import faktur z e-mail
+- Serwis IMAP skanujący skrzynkę pocztową.
+- Automatyczne wyodrębnianie załączników PDF i XML.
+- Rozpoznawanie faktur KSeF XML i ich automatyczny import.
+- Zapisywanie PDFów w module Dokumentów do późniejszej weryfikacji.
+- Integracja z systemem zadań Cron.
 
--- Sprawdź czy wszystkie tabele zostały utworzone
-SHOW TABLES LIKE 'invoice_%';
-SHOW TABLES LIKE 'project_%';
+#### 3. Eksport danych do CSV/Excel
+- Możliwość generowania zestawień faktur do plików CSV.
+- Obsługa filtrów (typ faktury, projekt) przy eksporcie.
+- Kodowanie UTF-8 z BOM (poprawne wyświetlanie polskich znaków w Excelu).
 
--- Sprawdź czy kolumny zostały dodane
-DESCRIBE invoices;
-```
+#### 4. Uproszczenie architektury
+- Całkowite usunięcie modułu wniosków urlopowych (Leave Requests) na rzecz zewnętrznego systemu.
+- Usunięcie wszystkich powiązanych widoków, modeli i ścieżek API.
 
-### Wsparcie
+### Nowe serwisy
+- `KsefService` - obsługa API KSeF i parsowanie XML.
+- `EmailImportService` - integracja ze skrzynką IMAP.
+- `ExportService` - generowanie raportów CSV.
 
-W razie problemów:
-1. Sprawdź logi: `/logs/YYYY-MM-DD.log`
-2. Sprawdź `IMPORT_GUIDE.md`
-3. Sprawdź `STRUCTURE.md` dla struktury bazy
-4. Skontaktuj się z zespołem deweloperskim
+### Zmiany w UI
+- Nowy widok `/invoices/ksef` do zarządzania bezpośrednim importem.
+- Przyciski "Pobierz z e-mail" oraz "Eksportuj do CSV" na liście faktur.
+- Aktualizacja menu głównego i pulpitu.
 
 ---
 
-**Wersja:** 1.1.0
-**Data wydania:** 2024-01-10
+**Wersja:** 1.3.0
+**Data wydania:** 2026-02-28
 **Autor:** ITSS Development Team
 **Copyright:** ITSS Sp. z o.o.
+

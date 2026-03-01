@@ -22,6 +22,9 @@ ob_start();
             </select>
             <a href="/invoices/create" class="btn btn-primary">Dodaj fakturę</a>
             <a href="/invoices/import" class="btn btn-success">Importuj z CSV</a>
+            <a href="/invoices/ksef" class="btn btn-info">Import z KSeF</a>
+            <button onclick="syncEmails()" class="btn btn-secondary">Pobierz z e-mail</button>
+            <button onclick="exportInvoices()" class="btn btn-warning">Eksportuj do CSV</button>
         </div>
     </div>
 
@@ -95,6 +98,41 @@ ob_start();
         const type = this.value;
         window.location.href = type ? `/invoices?type=${type}` : '/invoices';
     });
+
+    function exportInvoices() {
+        const type = document.getElementById('type-filter').value;
+        let url = '/api/invoices/export';
+        if (type) {
+            url += `?type=${type}`;
+        }
+        window.location.href = url;
+    }
+
+    async function syncEmails() {
+        if (!confirm('Czy chcesz sprawdzić skrzynkę e-mail w poszukiwaniu nowych faktur?')) return;
+        
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Synchronizacja...';
+
+        try {
+            const response = await fetch('/api/sync/emails', { method: 'POST' });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`Zakończono! Sprawdzono wiadomości: ${result.data.emails_checked}\nZałączników: ${result.data.attachments_found}\nPrzetworzono: ${result.data.invoices_processed}`);
+                location.reload();
+            } else {
+                alert('Błąd: ' + result.error);
+            }
+        } catch (error) {
+            alert('Błąd połączenia: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
 
     async function markAsPaid(id) {
         const paymentDate = prompt('Data zapłaty (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);

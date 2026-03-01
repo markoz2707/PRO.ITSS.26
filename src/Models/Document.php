@@ -18,6 +18,22 @@ class Document
         return $this->db->fetchOne('SELECT * FROM documents WHERE id = :id', ['id' => $id]);
     }
 
+    public function getAll(): array
+    {
+        $sql = '
+            SELECT d.*, u.first_name, u.last_name, 
+                   p.project_number, i.invoice_number,
+                   CONCAT(u.first_name, " ", u.last_name) as user_name
+            FROM documents d
+            LEFT JOIN users u ON d.uploaded_by = u.id
+            LEFT JOIN projects p ON d.project_id = p.id
+            LEFT JOIN invoices i ON d.invoice_id = i.id
+            ORDER BY d.created_at DESC
+        ';
+
+        return $this->db->fetchAll($sql);
+    }
+
     public function getByProject(int $projectId): array
     {
         $sql = '

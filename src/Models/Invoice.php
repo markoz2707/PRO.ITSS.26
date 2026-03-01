@@ -156,4 +156,20 @@ class Invoice
 
         return $this->db->fetchAll($sql, $params);
     }
+
+    public function getMonthlySummary(int $year): array
+    {
+        $sql = '
+            SELECT
+                MONTH(invoice_date) as month,
+                invoice_type,
+                SUM(net_amount) as total_net
+            FROM invoices
+            WHERE YEAR(invoice_date) = :year AND payment_status = "paid"
+            GROUP BY MONTH(invoice_date), invoice_type
+            ORDER BY month ASC
+        ';
+        
+        return $this->db->fetchAll($sql, ['year' => $year]);
+    }
 }

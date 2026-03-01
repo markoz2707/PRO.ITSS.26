@@ -468,8 +468,8 @@
             <li><a href="/projects">Projekty</a></li>
             <li><a href="/reconciliation">Uspójnianie danych</a></li>
             <li><a href="/invoices">Faktury</a></li>
+            <li><a href="/invoices/ksef">Import KSeF</a></li>
             <li><a href="/documents">Dokumenty</a></li>
-            <li><a href="/leaves">Wnioski urlopowe</a></li>
             <li><a href="/bonuses">Premie</a></li>
             <li><a href="/czasomat">Czasomat</a></li>
         </ul>

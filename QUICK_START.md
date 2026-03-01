@@ -130,7 +130,6 @@ Szczegóły: [IMPORT_GUIDE.md](IMPORT_GUIDE.md)
 Teraz możesz:
 - ✅ Zarządzać projektami
 - ✅ Dodawać faktury (ręcznie lub import CSV)
-- ✅ Składać wnioski urlopowe
 - ✅ Obliczać premie projektowe
 - ✅ Śledzić godziny pracy
 

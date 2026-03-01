@@ -31,7 +31,6 @@ PRO.ITSS.26/
 │   │   ├── Invoice.php
 │   │   ├── Document.php
 │   │   ├── WorkHour.php
-│   │   ├── LeaveRequest.php
 │   │   ├── BonusScheme.php
 │   │   └── CalculatedBonus.php
 │   │
@@ -60,10 +59,6 @@ PRO.ITSS.26/
 │   │   └── create.php
 │   ├── documents/
 │   │   └── list.php
-│   ├── leaves/
-│   │   ├── list.php
-│   │   ├── create.php
-│   │   └── detail.php
 │   └── bonuses/
 │       ├── list.php
 │       ├── schemes.php
@@ -175,17 +170,6 @@ Faktury kosztowe i przychodowe.
 - `overdue` - Zaległa
 - `cancelled` - Anulowana
 
-### LeaveRequest
-Wnioski urlopowe z workflow zatwierdzania.
-
-**Statusy:**
-- `draft` - Szkic
-- `pending_team_leader` - Oczekuje na lidera
-- `pending_manager` - Oczekuje na kierownika
-- `approved` - Zatwierdzony
-- `rejected` - Odrzucony
-- `cancelled` - Anulowany
-
 ### BonusScheme
 Schematy premiowe dla użytkowników.
 
@@ -199,25 +183,28 @@ Schematy premiowe dla użytkowników.
 ## Serwisy
 
 ### DynamicsCRMService
-Integracja z Dynamics 365 CRM.
-
-**Funkcje:**
-- `syncProjects()` - Synchronizuje projekty
-- `getProjectDetails()` - Pobiera szczegóły projektu
+Integracja z Dynamics 365 CRM (projekty).
 
 ### ServiceDeskService
-Integracja z ManageEngine ServiceDesk Plus.
+Integracja z ServiceDesk Plus MSP (godziny, zgłoszenia, kontrakty).
 
-**Funkcje:**
-- `syncWorkHours()` - Synchronizuje godziny pracy
-- `syncHelpdeskTickets()` - Synchronizuje zgłoszenia
+### InvoiceImportService
+Silnik importu faktur z plików CSV (automatyczne powiązania).
+
+### KsefService
+Pełna integracja z KSeF API (autoryzacja RSA, pobieranie XML, parser FA-2).
+
+### EmailImportService
+Automatyczne pobieranie faktur ze skrzynki e-mail (IMAP, obsługa załączników).
+
+### ExportService
+Generator raportów CSV (kodowanie UTF-8 BOM pod MS Excel).
 
 ### BonusCalculationService
-Obliczanie premii według różnych schematów.
+Obliczanie premii (Marża 1, Marża 2, Premia godzinowa, Helpdesk).
 
-**Funkcje:**
-- `calculateBonusForUser()` - Dla pojedynczego użytkownika
-- `calculateBonusesForPeriod()` - Dla wszystkich w okresie
+### DataReconciliationService
+Silnik uspójniania danych między CRM a ServiceDesk (algorytmy matchingu).
 
 ## Proces autentykacji
 
@@ -248,22 +235,6 @@ Obliczanie premii według różnych schematów.
 5. Mapowanie użytkowników i projektów
 6. Aktualizacja bazy danych
 7. Logowanie wyników
-
-## Workflow urlopów
-
-```
-Pracownik składa wniosek
-    ↓
-[pending_team_leader]
-    ↓
-Lider zespołu zatwierdza/odrzuca
-    ↓
-[pending_manager]
-    ↓
-Kierownik/Dyrektor zatwierdza/odrzuca
-    ↓
-[approved] lub [rejected]
-```
 
 ## Obliczanie premii
 

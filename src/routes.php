@@ -35,24 +35,16 @@ $router->get('/invoices/import', function(Request $req, Response $res) {
     require __DIR__ . '/../views/invoices/import.php';
 });
 
+$router->get('/invoices/ksef', function(Request $req, Response $res) {
+    require __DIR__ . '/../views/invoices/ksef.php';
+});
+
 $router->get('/invoices/{id}', function(Request $req, Response $res, $id) {
     require __DIR__ . '/../views/invoices/detail.php';
 });
 
 $router->get('/documents', function(Request $req, Response $res) {
     require __DIR__ . '/../views/documents/list.php';
-});
-
-$router->get('/leaves', function(Request $req, Response $res) {
-    require __DIR__ . '/../views/leaves/list.php';
-});
-
-$router->get('/leaves/create', function(Request $req, Response $res) {
-    require __DIR__ . '/../views/leaves/create.php';
-});
-
-$router->get('/leaves/{id}', function(Request $req, Response $res, $id) {
-    require __DIR__ . '/../views/leaves/detail.php';
 });
 
 $router->get('/bonuses', function(Request $req, Response $res) {
@@ -116,6 +108,18 @@ $router->get('/api/invoices', function(Request $req, Response $res) {
     $res->json(['success' => true, 'data' => $invoices]);
 });
 
+$router->get('/api/invoices/export', function(Request $req, Response $res) {
+    $invoiceModel = new \ITSS\Models\Invoice();
+    $type = $req->query('type');
+    $invoices = $invoiceModel->getAll($type);
+
+    $exportService = new \ITSS\Services\ExportService();
+    $data = $exportService->prepareInvoicesData($invoices);
+    $headers = ['Numer faktury', 'Typ', 'Kontrahent', 'Projekt', 'Data', 'Kwota netto', 'Kwota VAT', 'Kwota brutto', 'Waluta', 'Status płatności', 'Business Type', 'Kategoria'];
+
+    $exportService->exportToCSV($data, 'faktury_' . date('Ymd_His') . '.csv', $headers);
+});
+
 $router->post('/api/invoices', function(Request $req, Response $res) {
     $invoiceModel = new \ITSS\Models\Invoice();
     $data = $req->input();
@@ -141,74 +145,14 @@ $router->post('/api/invoices/{id}/mark-paid', function(Request $req, Response $r
     }
 });
 
-$router->get('/api/leaves', function(Request $req, Response $res) {
-    $leaveModel = new \ITSS\Models\LeaveRequest();
-    $userId = \ITSS\Core\Session::get('user_id');
-    $userRole = \ITSS\Core\Session::get('user_role');
-
-    if ($userRole === 'admin') {
-        $status = $req->query('status');
-        $leaves = $leaveModel->getAll($status);
-    } elseif ($userRole === 'team_leader') {
-        $leaves = $leaveModel->getPendingForTeamLeader($userId);
-    } elseif (in_array($userRole, ['manager', 'director'])) {
-        $leaves = $leaveModel->getPendingForManager($userId);
-    } else {
-        $leaves = $leaveModel->getByUser($userId);
-    }
-
-    $res->json(['success' => true, 'data' => $leaves]);
-});
-
-$router->post('/api/leaves', function(Request $req, Response $res) {
-    $leaveModel = new \ITSS\Models\LeaveRequest();
-    $userId = \ITSS\Core\Session::get('user_id');
-    $data = $req->input();
-
+$router->post('/api/sync/emails', function(Request $req, Response $res) use ($config) {
     try {
-        $id = $leaveModel->create($data, $userId);
-        $res->json(['success' => true, 'id' => $id]);
+        $uploadPath = $config['upload']['documents_path'];
+        $emailService = new \ITSS\Services\EmailImportService($config['email_import'], $uploadPath);
+        $result = $emailService->syncInvoices();
+        $res->json($result);
     } catch (\Exception $e) {
-        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
-    }
-});
-
-$router->post('/api/leaves/{id}/approve-team-leader', function(Request $req, Response $res, $id) {
-    $leaveModel = new \ITSS\Models\LeaveRequest();
-    $userId = \ITSS\Core\Session::get('user_id');
-    $comment = $req->input('comment');
-
-    try {
-        $leaveModel->approveByTeamLeader($id, $userId, $comment);
-        $res->json(['success' => true]);
-    } catch (\Exception $e) {
-        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
-    }
-});
-
-$router->post('/api/leaves/{id}/approve-manager', function(Request $req, Response $res, $id) {
-    $leaveModel = new \ITSS\Models\LeaveRequest();
-    $userId = \ITSS\Core\Session::get('user_id');
-    $comment = $req->input('comment');
-
-    try {
-        $leaveModel->approveByManager($id, $userId, $comment);
-        $res->json(['success' => true]);
-    } catch (\Exception $e) {
-        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
-    }
-});
-
-$router->post('/api/leaves/{id}/reject', function(Request $req, Response $res, $id) {
-    $leaveModel = new \ITSS\Models\LeaveRequest();
-    $userId = \ITSS\Core\Session::get('user_id');
-    $comment = $req->input('comment');
-
-    try {
-        $leaveModel->reject($id, $userId, $comment);
-        $res->json(['success' => true]);
-    } catch (\Exception $e) {
-        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+        $res->status(500)->json(['success' => false, 'error' => $e->getMessage()]);
     }
 });
 
@@ -382,6 +326,74 @@ $router->post('/api/invoices/import', function(Request $req, Response $res) use 
     }
 });
 
+$router->post('/api/invoices/ksef/import-xml', function(Request $req, Response $res) use ($config) {
+    if (!$req->hasFile('ksef_file')) {
+        $res->status(400)->json(['success' => false, 'error' => 'Brak pliku XML']);
+        return;
+    }
+
+    $file = $req->file('ksef_file');
+    $invoiceType = $req->post('invoice_type', 'cost');
+    $projectId = $req->post('project_id');
+    if (empty($projectId)) $projectId = null;
+
+    $ksefService = new \ITSS\Services\KsefService($config['ksef'] ?? []);
+    $userId = \ITSS\Core\Session::get('user_id');
+
+    try {
+        $xmlContent = file_get_contents($file['tmp_name']);
+        $parsedData = $ksefService->parseXmlContent($xmlContent);
+        
+        $invoiceId = $ksefService->importInvoice($parsedData, $userId, $invoiceType, $projectId);
+        
+        $res->json([
+            'success' => true, 
+            'invoice_id' => $invoiceId,
+            'invoice' => $parsedData
+        ]);
+    } catch (\Exception $e) {
+        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+$router->post('/api/invoices/ksef/api-sync', function(Request $req, Response $res) use ($config) {
+    $dateFrom = $req->post('date_from');
+    $dateTo = $req->post('date_to');
+
+    if (!$dateFrom || !$dateTo) {
+        $res->status(400)->json(['success' => false, 'error' => 'Wymagane daty od i do']);
+        return;
+    }
+
+    $ksefService = new \ITSS\Services\KsefService($config['ksef'] ?? []);
+
+    try {
+        $result = $ksefService->queryInvoices($dateFrom, $dateTo);
+        $res->json($result);
+    } catch (\Exception $e) {
+        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
+$router->post('/api/invoices/ksef/download', function(Request $req, Response $res) use ($config) {
+    $ksefId = $req->input('ksef_id');
+    $userId = \ITSS\Core\Session::get('user_id');
+
+    if (!$ksefId) {
+        $res->status(400)->json(['success' => false, 'error' => 'Wymagany numer KSeF']);
+        return;
+    }
+
+    $ksefService = new \ITSS\Services\KsefService($config['ksef'] ?? []);
+
+    try {
+        $invoiceId = $ksefService->downloadAndImport($ksefId, $userId);
+        $res->json(['success' => true, 'invoice_id' => $invoiceId]);
+    } catch (\Exception $e) {
+        $res->status(400)->json(['success' => false, 'error' => $e->getMessage()]);
+    }
+});
+
 $router->get('/api/invoices/{id}/items', function(Request $req, Response $res, $id) {
     $invoiceItemModel = new \ITSS\Models\InvoiceItem();
     $items = $invoiceItemModel->getByInvoice($id);
@@ -411,6 +423,26 @@ $router->get('/api/projects/{id}/revenues', function(Request $req, Response $res
     $projectRevenueModel = new \ITSS\Models\ProjectRevenue();
     $revenues = $projectRevenueModel->getByProject($id);
     $res->json(['success' => true, 'data' => $revenues]);
+});
+
+$router->get('/api/documents/download/{id}', function(Request $req, Response $res, $id) {
+    $documentModel = new \ITSS\Models\Document();
+    $doc = $documentModel->findById($id);
+
+    if (!$doc || !file_exists($doc['file_path'])) {
+        $res->status(404)->json(['success' => false, 'error' => 'Plik nie istnieje']);
+        return;
+    }
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: ' . ($doc['mime_type'] ?: 'application/octet-stream'));
+    header('Content-Disposition: attachment; filename="' . basename($doc['document_name']) . '"');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($doc['file_path']));
+    readfile($doc['file_path']);
+    exit;
 });
 
 // =========================================================================

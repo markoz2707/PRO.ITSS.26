@@ -30,45 +30,35 @@ install.bat
 - Mapowanie faktur do projektów (wiele do wielu)
 - Śledzenie statusu płatności
 - Import masowy z plików CSV/Excel
+- **Pełna integracja z KSeF API** (bezpośrednie pobieranie faktur)
+- **Automatyczny import z e-mail** (skanowanie skrzynki IMAP)
+- **Eksport danych do CSV/Excel** (zgodność z MS Excel)
 - Business Type, Segment, Sector
 - Kody MPK (DH1, DH2, GNP, DO, OG, EU1, EU2, ONO, KSDO)
 - Kategorie i opiekunowie handlowi
-- Przygotowanie pod import z KSeF
 
 ### 3. Zarządzanie dokumentami
 - Przechowywanie umów i załączników
-- Załączniki do faktur
-- Protokoły odbioru
-- Inne dokumenty projektowe
+- Załączniki do faktur i załączniki z e-maili
+- Protokoły odbioru i inne dokumenty projektowe
+- **Bezpieczne pobieranie plików przez API**
 
-### 4. Godziny pracy
+### 4. Godziny pracy i Uspójnianie danych
 - Automatyczna synchronizacja z ManageEngine ServiceDesk Plus
+- **Moduł Uspójniania Danych (Reconciliation)** - mapowanie CRM ↔ ServiceDesk
 - Podział na realizację, presales i wsparcie
 - Raportowanie na poziomie projektu i użytkownika
 
-### 5. System urlopowy
-- Składanie wniosków urlopowych
-- Proces akceptacji dwupoziomowy:
-  - Zatwierdzenie przez lidera zespołu
-  - Zatwierdzenie przez kierownika/dyrektora
-- Historia zmian statusów
-- Podsumowania urlopów
-
-### 6. System premiowy
-- Premie od marży (marża 1 i marża 2):
-  - Marża 1 = Przychody - Koszty bezpośrednie
-  - Marża 2 = Marża 1 - Koszty pracy
-- Premie od godzin (stała stawka za godzinę dla inżynierów)
-- Premie dla helpdesku:
-  - Procentowa z określonej puli
-  - Od ilości rozwiązanych zgłoszeń
-- Automatyczne obliczanie premii
-- Proces zatwierdzania premii
+### 5. System premiowy
+- Premie od marży (marża 1 i marża 2)
+- Premie od godzin i dla helpdesku
+- Proces zatwierdzania i śledzenia wypłat
 
 ### 7. Integracje
 - **Microsoft 365 / Azure AD** - autentykacja użytkowników
 - **Dynamics 365 CRM** - synchronizacja projektów
-- **ManageEngine ServiceDesk Plus** - godziny pracy i zgłoszenia
+- **ManageEngine ServiceDesk Plus** - godziny, zgłoszenia, kontrakty
+- **Krajowy System e-Faktur (KSeF)** - bezpośrednia integracja API
 - **Czasomat ITSS** - iframe w menu aplikacji
 
 ## Wymagania systemowe
@@ -77,11 +67,7 @@ install.bat
 - MariaDB 10.5 lub nowszy
 - Serwer WWW (Apache, Nginx)
 - Rozszerzenia PHP:
-  - PDO
-  - PDO_MySQL
-  - curl
-  - json
-  - mbstring
+  - PDO, PDO_MySQL, curl, json, mbstring, **openssl, imap**
 
 ## Instalacja
 
@@ -262,21 +248,11 @@ UPDATE users SET role = 'admin' WHERE email = 'twoj.email@itss.pl';
 ## Struktura ról
 
 - **admin** - pełny dostęp do systemu
-- **director** - dyrektor, zatwierdza urlopy kierowników
-- **manager** - kierownik, zatwierdza urlopy zatwierdzone przez liderów
-- **team_leader** - lider zespołu, pierwsza akceptacja urlopów
+- **director** - dyrektor
+- **manager** - kierownik
+- **team_leader** - lider zespołu
 - **employee** - pracownik standardowy
 - **helpdesk** - pracownik helpdesku z premiami od zgłoszeń
-
-## Hierarchia zatwierdzania urlopów
-
-1. Pracownik składa wniosek → status: `pending_team_leader`
-2. Lider zespołu zatwierdza → status: `pending_manager`
-3. Kierownik/Dyrektor zatwierdza → status: `approved`
-
-Specjalne przypadki:
-- Wnioski zastępcy zatwierdza dyrektor
-- Wnioski dyrektora zatwierdza prezes lub osoba go zastępująca
 
 ## Obliczanie premii
 
@@ -321,17 +297,17 @@ Premia = Liczba rozwiązanych zgłoszeń × Stała stawka
 - `GET /api/projects/{id}/financials` - Dane finansowe projektu
 - `POST /api/projects` - Utworzenie projektu
 
-### Faktury
+### Faktury i KSeF
 - `GET /api/invoices` - Lista faktur
-- `POST /api/invoices` - Utworzenie faktury
-- `POST /api/invoices/{id}/mark-paid` - Oznaczenie jako zapłacona
+- `GET /api/invoices/export` - Eksport do CSV
+- `POST /api/invoices/import` - Import z CSV
+- `POST /api/invoices/ksef/import-xml` - Import pliku XML KSeF
+- `POST /api/invoices/ksef/api-sync` - Synchronizacja nagłówków z API
+- `POST /api/invoices/ksef/download` - Pobranie faktury z KSeF
 
-### Urlopy
-- `GET /api/leaves` - Lista wniosków
-- `POST /api/leaves` - Złożenie wniosku
-- `POST /api/leaves/{id}/approve-team-leader` - Zatwierdzenie przez lidera
-- `POST /api/leaves/{id}/approve-manager` - Zatwierdzenie przez kierownika
-- `POST /api/leaves/{id}/reject` - Odrzucenie wniosku
+### Dokumenty
+- `POST /api/documents/upload` - Przesłanie dokumentu
+- `GET /api/documents/download/{id}` - Pobranie dokumentu
 
 ### Premie
 - `GET /api/bonuses/schemes` - Lista schematów premiowych
@@ -340,8 +316,10 @@ Premia = Liczba rozwiązanych zgłoszeń × Stała stawka
 - `GET /api/bonuses/calculated` - Lista obliczonych premii
 
 ### Synchronizacja
-- `POST /api/sync/crm` - Ręczna synchronizacja CRM
-- `POST /api/sync/servicedesk` - Ręczna synchronizacja ServiceDesk
+- `POST /api/sync/crm` - Synchronizacja CRM
+- `POST /api/sync/servicedesk` - Synchronizacja ServiceDesk
+- `POST /api/sync/emails` - Pobieranie faktur z e-mail
+- `POST /api/reconciliation/auto` - Automatyczne uspójnianie danych CRM/SD
 
 ## Bezpieczeństwo
 

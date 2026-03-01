@@ -71,6 +71,28 @@ return [
         'auto_reconcile_on_sync' => false, // Auto-reconcile after sync (true = no manual review)
     ],
 
+    // KSeF Integration Configuration
+    'ksef' => [
+        'environment' => 'demo', // 'prod', 'test', 'demo'
+        'nip' => '', // NIP Twojej firmy
+        'token' => '', // Twój wygenerowany token KSeF
+        'import_type' => 'cost', // Domyślny typ importowanych faktur (np. cost)
+    ],
+
+    // Email Invoice Import Configuration (IMAP)
+    'email_import' => [
+        'enabled' => false,
+        'host' => 'imap.gmail.com',
+        'port' => 993,
+        'user' => '',
+        'password' => '',
+        'encryption' => 'ssl', // 'ssl', 'tls', 'none'
+        'folder' => 'INBOX',
+        'allowed_extensions' => ['pdf', 'xml'],
+        'auto_archive' => true, // Przenoś do folderu 'Processed' po imporcie
+        'processed_folder' => 'Processed'
+    ],
+
     // File Upload Configuration
     'upload' => [
         'max_size' => 50 * 1024 * 1024, // 50 MB
@@ -97,13 +119,6 @@ return [
         'smtp_user' => '',
         'smtp_password' => '',
         'smtp_encryption' => 'tls'
-    ],
-
-    // Leave Request Settings
-    'leaves' => [
-        'require_team_leader_approval' => true,
-        'require_manager_approval' => true,
-        'notify_on_status_change' => true
     ],
 
     // Bonus Calculation Settings

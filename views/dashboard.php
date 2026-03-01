@@ -1,12 +1,10 @@
 <?php
 use ITSS\Models\Project;
 use ITSS\Models\Invoice;
-use ITSS\Models\LeaveRequest;
 use ITSS\Core\Session;
 
 $projectModel = new Project();
 $invoiceModel = new Invoice();
-$leaveModel = new LeaveRequest();
 
 $activeProjects = count($projectModel->getAll('active'));
 $totalProjects = count($projectModel->getAll());
@@ -26,13 +24,6 @@ foreach ($invoiceSummary as $summary) {
 
 $userId = Session::get('user_id');
 $userRole = Session::get('user_role');
-
-$pendingLeaves = 0;
-if ($userRole === 'team_leader') {
-    $pendingLeaves = count($leaveModel->getPendingForTeamLeader($userId));
-} elseif (in_array($userRole, ['manager', 'director'])) {
-    $pendingLeaves = count($leaveModel->getPendingForManager($userId));
-}
 
 $pageTitle = 'Dashboard - ITSS Project Management';
 ob_start();
@@ -58,17 +49,6 @@ ob_start();
         <div class="stat-label">Koszty (zapłacone)</div>
     </div>
 </div>
-
-<?php if ($pendingLeaves > 0): ?>
-<div class="card">
-    <div class="card-header">
-        Wnioski urlopowe do zatwierdzenia
-        <span class="badge badge-warning"><?php echo $pendingLeaves; ?></span>
-    </div>
-    <p>Masz <?php echo $pendingLeaves; ?> wniosków urlopowych oczekujących na zatwierdzenie.</p>
-    <a href="/leaves" class="btn btn-primary">Przejdź do wniosków</a>
-</div>
-<?php endif; ?>
 
 <div class="card">
     <div class="card-header">Ostatnie projekty</div>
@@ -119,7 +99,6 @@ ob_start();
     <div class="card-header">Szybkie akcje</div>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
         <a href="/invoices/create" class="btn btn-primary">Dodaj fakturę</a>
-        <a href="/leaves/create" class="btn btn-primary">Złóż wniosek urlopowy</a>
         <a href="/documents" class="btn btn-primary">Zarządzaj dokumentami</a>
         <a href="/bonuses/calculate" class="btn btn-success">Oblicz premie</a>
     </div>

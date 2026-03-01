@@ -108,15 +108,6 @@
 #### Zaktualizowane modele:
 - ✅ **Invoice** - rozszerzona metoda `create()` i `update()` o wszystkie nowe pola
 
-### 6. ✅ API Endpoints
-
-#### Nowe endpointy:
-- ✅ `POST /api/invoices/import` - Import faktur z CSV
-- ✅ `GET /api/invoices/{id}/items` - Lista pozycji faktury
-- ✅ `POST /api/invoices/{id}/items` - Dodaj pozycję do faktury
-- ✅ `GET /api/projects/{id}/costs` - Lista kosztów projektu
-- ✅ `GET /api/projects/{id}/revenues` - Lista przychodów projektu
-
 ### 7. ✅ Skrypty instalacyjne
 
 #### Automatyczna instalacja:
@@ -326,8 +317,47 @@ Wszystkie wymagania użytkownika zostały w pełni zrealizowane:
 
 ---
 
-**Wersja:** 1.2.0
-**Data:** 2026-02-21
+## Wersja 1.3.0 - Pełna integracja KSeF, Email i Eksport
+
+**Data ukończenia:** 2026-02-28
+
+### 10. ✅ Integracja z KSeF API
+- ✅ Bezpośrednia komunikacja z serwerami Ministerstwa Finansów.
+- ✅ Autoryzacja RSA z szyfrowaniem tokenów sesyjnych.
+- ✅ Pobieranie i automatyczny import faktur (XML FA-2).
+- ✅ Nowy serwis `KsefService`.
+- ✅ Nowy widok `/invoices/ksef`.
+
+### 11. ✅ Automatyczny import faktur z e-mail
+- ✅ Integracja IMAP z obsługą załączników (PDF/XML).
+- ✅ Automatyczne rozpoznawanie formatu KSeF.
+- ✅ Nowy serwis `EmailImportService`.
+- ✅ Integracja z systemowym harmonogramem zadań (Cron).
+
+### 12. ✅ System eksportu i raportowania
+- ✅ Generator plików CSV z obsługą UTF-8 BOM (Excel).
+- ✅ Filtrowanie danych przy eksporcie.
+- ✅ Nowy serwis `ExportService`.
+
+### 13. ✅ Optymalizacja systemu
+- ✅ Całkowite usunięcie modułu wniosków urlopowych (Leave Requests).
+- ✅ Czyszczenie bazy danych z niepotrzebnych tabel i pól.
+- ✅ Uproszczenie interfejsu użytkownika.
+
+---
+
+### Statystyki implementacji v1.3.0:
+- **Nowe serwisy:** 3 (KsefService, EmailImportService, ExportService)
+- **Usunięte modele:** 1 (LeaveRequest)
+- **Usunięte widoki:** 3
+- **Usunięte tabele:** 2 (leave_requests, leave_request_history)
+- **Łącznie tabel w bazie:** 18
+
+---
+
+**Wersja:** 1.3.0
+**Data:** 2026-02-28
 **Status:** ✅ UKOŃCZONY
 **Autor:** ITSS Development Team
 **Copyright:** ITSS Sp. z o.o.
+

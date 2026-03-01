@@ -100,6 +100,24 @@ if ($config['reconciliation']['auto_reconcile_on_sync'] ?? false) {
     }
 }
 
+// Synchronizacja faktur z e-mail
+if ($config['email_import']['enabled'] ?? false) {
+    try {
+        Logger::info('Starting email invoice synchronization');
+        $uploadPath = $config['upload']['documents_path'];
+        $emailService = new \ITSS\Services\EmailImportService($config['email_import'], $uploadPath);
+        $emailResult = $emailService->syncInvoices();
+        
+        if ($emailResult['success']) {
+            Logger::info('Email sync completed', $emailResult['data']);
+        } else {
+            Logger::error('Email sync failed: ' . $emailResult['error']);
+        }
+    } catch (\Exception $e) {
+        Logger::error('Email synchronization failed: ' . $e->getMessage());
+    }
+}
+
 Logger::info('=== Automatic synchronization completed ===');
 
 echo "Synchronization completed. Check logs for details.\n";

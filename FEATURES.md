@@ -16,9 +16,9 @@
 
 ### System ról i uprawnień
 - ✅ **Admin** - pełny dostęp do systemu
-- ✅ **Director** - dyrektor, zatwierdza urlopy kierowników
-- ✅ **Manager** - kierownik, zatwierdza urlopy zatwierdzone przez liderów
-- ✅ **Team Leader** - lider zespołu, pierwsza akceptacja urlopów
+- ✅ **Director** - dyrektor
+- ✅ **Manager** - kierownik
+- ✅ **Team Leader** - lider zespołu
 - ✅ **Employee** - pracownik standardowy
 - ✅ **Helpdesk** - pracownik helpdesku z premiami od zgłoszeń
 
@@ -203,44 +203,6 @@
 - ✅ Raportowanie godzin per projekt
 - ✅ Raportowanie godzin per użytkownik
 - ✅ Wykorzystanie w obliczeniach premii
-
----
-
-## 🏖️ System urlopowy
-
-### Wnioski urlopowe
-- ✅ Składanie wniosków przez pracowników
-- ✅ Typy urlopów:
-  - Vacation (urlop wypoczynkowy)
-  - Sick leave (zwolnienie lekarskie)
-  - Other (inne)
-- ✅ Daty: od, do
-- ✅ Liczba dni
-- ✅ Komentarz/uzasadnienie
-
-### Proces akceptacji dwupoziomowy
-- ✅ **Poziom 1 - Team Leader:**
-  - Status: pending_team_leader
-  - Zatwierdzenie przez lidera zespołu
-  - Możliwość odrzucenia z komentarzem
-
-- ✅ **Poziom 2 - Manager:**
-  - Status: pending_manager (po zatwierdzeniu przez lidera)
-  - Zatwierdzenie przez kierownika/dyrektora
-  - Możliwość odrzucenia z komentarzem
-
-- ✅ **Finalne statusy:**
-  - Approved (zatwierdzony)
-  - Rejected (odrzucony)
-  - Cancelled (anulowany przez pracownika)
-
-### Funkcjonalności dodatkowe
-- ✅ Historia zmian statusów
-- ✅ Komentarze do decyzji
-- ✅ Podsumowanie urlopów per pracownik
-- ✅ Podsumowanie urlopów per zespół
-- ✅ Walidacja dat (nie może składać w przeszłości)
-- ✅ Możliwość anulowania przez pracownika (przed zatwierdzeniem)
 
 ---
 
@@ -450,7 +412,54 @@
 
 ---
 
-**Wersja:** 1.1.0
-**Data:** 2026-01-11
+## 🚀 Krajowy System e-Faktur (KSeF)
+
+### Integracja API
+- ✅ Bezpośrednia komunikacja z systemem Ministerstwa Finansów
+- ✅ Autoryzacja RSA z wykorzystaniem kluczy publicznych (.pem)
+- ✅ Szyfrowanie tokenów sesyjnych (Session Challenge)
+- ✅ Wyszukiwanie faktur w zadanym okresie (Query Invoice)
+- ✅ Pobieranie binarnego XML faktury (FA-2) po numerze referencyjnym
+
+### Przetwarzanie i Import
+- ✅ Zaawansowany parser XML FA(2)
+- ✅ Automatyczne wyciąganie pozycji faktury (Invoice Items)
+- ✅ Mapowanie stawek VAT i walut
+- ✅ Walidacja duplikatów po numerze KSeF
+
+---
+
+## ✉️ Automatyczny import z E-mail
+
+### Integracja IMAP
+- ✅ Obsługa skrzynek pocztowych przez protokół IMAP
+- ✅ Wsparcie dla SSL/TLS (bezpieczne połączenie)
+- ✅ Skanowanie tylko nieprzeczytanych wiadomości (UNSEEN)
+- ✅ Automatyczne wyodrębnianie załączników
+
+### Logika biznesowa
+- ✅ Rozpoznawanie plików PDF i XML
+- ✅ Automatyczny import faktur KSeF XML do bazy
+- ✅ Katalogowanie PDFów jako dokumentów "do weryfikacji"
+- ✅ Archiwizacja przetworzonych maili (przenoszenie do folderu Processed)
+- ✅ Możliwość automatyzacji przez systemowy Cron
+
+---
+
+## 📊 Eksport i Raportowanie
+
+### Moduł Eksportu
+- ✅ Generowanie zestawień faktur do formatu CSV
+- ✅ Obsługa kodowania UTF-8 z BOM (pełna zgodność z MS Excel)
+- ✅ Filtrowanie eksportowanych danych (typ faktury, projekt)
+- ✅ Dynamiczne nazewnictwo plików z datą wygenerowania
+
+---
+
+## ✅ Zrealizowane funkcjonalności - Wersja 1.3.0
+
+**Wersja:** 1.3.0
+**Data:** 2026-02-28
 **Status:** ✅ PRODUCTION READY
 **Copyright:** ITSS Sp. z o.o.
+
